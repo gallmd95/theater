@@ -100,7 +100,9 @@ def getEmails():
             for line in tempfile:
                 if 'mailto:' in line:
                     start = line.index('mailto:') + 7
-                    end = line.index('"',start)
+                    firstend = line.find('"',start)
+                    secondend = line.find("'",start)
+                    end = firstend if firstend > start and (firstend < secondend or secondend < 0) else secondend
                     if (end - start) < 100 and (end - start) > 0:
                         email = line[start:end]
                         if(' ' in  email):
@@ -127,7 +129,29 @@ def getNames():
         'Content',
         'Public',
         'Settings',
-        'Associat'
+        'Associat',
+        'Program',
+        'Slide',
+        'Instit',
+        'Icon',
+        'Naviga',
+        'Museu',
+        'Info',
+        'Incom',
+        'Mounta',
+        'Stateme',
+        'Mech',
+        'Fellow',
+        'Boston',
+        'Prod',
+        'Arts',
+        'History',
+        'Math',
+        'Langua',
+        'Theater',
+        'Menu',
+        'Play',
+        'Button'
     ]
     transforms = [
         [],
@@ -161,7 +185,6 @@ def getNames():
         [lambda x: x.split(' ')[0].lower()+'.'+x.split(' ')[-1].lower()+'@ucr.edu',lambda x: x.split(' ')[0][0].lower()+x.split(' ')[-1].lower()+'@ucr.edu'],
         [lambda x: x.split(' ')[0][0].lower()+x.split(' ')[-1].lower()+'@ucsd.edu'],
         [lambda x: x.split(' ')[0][0].lower()+x.split(' ')[-1].lower()+'@usfca.edu'],
-        [],
         [lambda x: x.split(' ')[0][0].lower()+x.split(' ')[-1].lower()+'@uchicago.edu'],
         [lambda x: x.split(' ')[0][0].lower()+x.split(' ')[-1].lower()+'@illinois.edu'],
         [lambda x: x.split(' ')[0][0].lower()+x.split(' ')[-1].lower()+'@theater.umass.edu'],
@@ -252,6 +275,19 @@ def getPrint():
             print each
 
 def fillFiles(driver, urls):
+    driver = webdriver.Chrome(DRIVER_PATH)
+    urls = [
+        ('Johns Hopkins University','http://krieger.jhu.edu/theatre-arts/people/'),
+        ('Michigan State University','http://theatre.msu.edu/people/faculty-staff/'),
+        ('Yale University','https://theaterstudies.yale.edu/people'),
+        ('University of Minnesota, Twin Cities','https://cla.umn.edu/theatre/people/staff'),
+        ('University of Minnesota, Twin Cities','https://cla.umn.edu/theatre/people/faculty'),
+        ('University of Virginia','http://drama.virginia.edu/staff'),
+        ('University of Virginia','http://drama.virginia.edu/grad-ta'),
+        ('University of Virginia','http://drama.virginia.edu/emeritus-faculty'),
+        ('University of Virginia','http://drama.virginia.edu/faculty'),
+        ('University of Washington','https://drama.washington.edu/people/faculty'),
+    ]
     schools = []
     with open('lyssdata.csv', 'r') as data:
             reader = csv.reader(data, delimiter=',')
@@ -271,24 +307,41 @@ def fillFiles(driver, urls):
                         print each
                         print e
 
+    driver.close()   
 
-driver = webdriver.Chrome(DRIVER_PATH)
-urls = [
-    ('Johns Hopkins University','http://krieger.jhu.edu/theatre-arts/people/'),
-    ('Michigan State University','http://theatre.msu.edu/people/faculty-staff/'),
-    ('Yale University','https://theaterstudies.yale.edu/people'),
-    ('University of Minnesota, Twin Cities','https://cla.umn.edu/theatre/people/staff'),
-    ('University of Minnesota, Twin Cities','https://cla.umn.edu/theatre/people/faculty'),
-    ('University of Virginia','http://drama.virginia.edu/staff'),
-    ('University of Virginia','http://drama.virginia.edu/grad-ta'),
-    ('University of Virginia','http://drama.virginia.edu/emeritus-faculty'),
-    ('University of Virginia','http://drama.virginia.edu/faculty'),
-    ('University of Washington','https://drama.washington.edu/people/faculty'),
-]
+def doIt():
+    for each in names.keys():
+        emails[each]['guesses'] = []
+        for guess in names[each]['emails']:
+            emails[each]['guesses'].append(guess)
 
+    with open(os.getcwd()+"/results/results.txt", "wb") as file:
+        for each in emails.keys():
+            print each
+            file.write(each+'\n')
+            print '100%'
+            file.write('100%\n')
+            emails[each]['emails'] = list(set(emails[each]['emails']))
+            emails[each]['guesses'] = list(set(emails[each]['guesses']))
+            numberreal = len(emails[each]['emails'])
+            for count in xrange(50):
+                if count < numberreal:
+                    print emails[each]['emails'][count]
+                    file.write(emails[each]['emails'][count]+'\n')
+                elif count >= numberreal:
+                    if count == numberreal:
+                        print "50-50"
+                        file.write("50-50\n")
+                    if count - numberreal < len(emails[each]['guesses']):
+                        print emails[each]['guesses'][count-numberreal]
+                        file.write(emails[each]['guesses'][count-numberreal]+"\n")
+                    else:
+                        break
 
+emails = getEmails() 
 
-driver.close()    
+names = getNames()
 
+doIt()
 
                     
