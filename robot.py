@@ -10,17 +10,17 @@ import nltk
 import re
 from nameparser.parser import HumanName
 
-def sel(driver, school):
+DRIVER_PATH = os.getcwd()+'/chromedriver'
+
+def getLinks(driver, school):
     driver.get("https://google.com")
     sleep(2)
     driver.find_element_by_id('lst-ib').send_keys(school + ' theater people', Keys.RETURN)
     sleep(2)
     result = driver.find_elements_by_xpath("//div[@class='rc']")[0]
     result.find_element_by_xpath("./h3/a").click()
-    #url = driver.find_element_by_class_name('iUh30').get_attribute('innerHTML')
-    #driver.get(url)
     sleep(3)
-    return driver.current_url.encode('utf-8') + '\n' + driver.page_source.encode('utf-8')
+    return driver.current_url.encode('utf-8')
 
 def sel2(driver, url):
     driver.get(url)
@@ -49,24 +49,25 @@ s = ['University of California, Berkeley',
     'Iowa State University',
     'Oregon Health and Science University',]
 
+"""
 def getData():
     with open('lyssdata.csv', 'r') as data:
         reader = csv.reader(data, delimiter=',')
         for row in reader:
             schools.append(row[2])
 
-    driver = webdriver.Chrome('/Users/school/Dev/git/theater/chromedriver')
+    driver = webdriver.Chrome(DRIVER_PATH)
     try:
         for school in schools:
             with open(school+'.txt', 'wb') as emailfile:
                 try:
-                    emailfile.write(sel(driver, school))
+                    #emailfile.write(sel2(driver, school))
                 except WebDriverException as e:
                     print school
                     print e
-
     finally:
         driver.close()
+"""
 
 def get_human_names(text):
     tokens = nltk.tokenize.word_tokenize(text)
@@ -196,9 +197,7 @@ def getNames():
         ind +=1
     return names
                         
-    
-
-def getLinks():
+def getUrls():
     links = [
         ('Johns Hopkins University','http://krieger.jhu.edu/theatre-arts/people/'),
         #('University of Michigan-Ann Arbor','http://smtd.umich.edu/faculty_staff/index_dept.php'),
@@ -212,7 +211,7 @@ def getLinks():
         ('University of Virginia','http://drama.virginia.edu/faculty'),
     ]
 
-    driver = webdriver.Chrome('/Users/school/Dev/git/theater/chromedriver')
+    driver = webdriver.Chrome(DRIVER_PATH)
     try:
         for link in links:
             with open(link[0]+'.txt', 'ab') as emailfile:
@@ -244,15 +243,52 @@ def getLinks():
                         emails[name]['emails'].append(email)
     return emails
 
+def getPrint():
+    emails = getNames()
+    print emails
+    for key in emails.keys():
+        print key
+        for each in list(set(emails[key]['emails'])):
+            print each
 
-emails = getNames()
-print emails
-for key in emails.keys():
-    print key
-    for each in list(set(emails[key]['emails'])):
-        print each
+def fillFiles(driver, urls):
+    schools = []
+    with open('lyssdata.csv', 'r') as data:
+            reader = csv.reader(data, delimiter=',')
+            for row in reader:
+                schools.append(row[2])
 
-    
+    for each in schools:
+        urls.append((each, getLinks(driver, each)))
+
+    for each in urls:
+        with open(each[0]+'.txt', 'ab') as emailfile:
+                    try:
+                        driver.get(each[1])
+                        sleep(4)
+                        emailfile.write(driver.page_source.encode('utf-8'))
+                    except WebDriverException as e:
+                        print each
+                        print e
+
+
+driver = webdriver.Chrome(DRIVER_PATH)
+urls = [
+    ('Johns Hopkins University','http://krieger.jhu.edu/theatre-arts/people/'),
+    ('Michigan State University','http://theatre.msu.edu/people/faculty-staff/'),
+    ('Yale University','https://theaterstudies.yale.edu/people'),
+    ('University of Minnesota, Twin Cities','https://cla.umn.edu/theatre/people/staff'),
+    ('University of Minnesota, Twin Cities','https://cla.umn.edu/theatre/people/faculty'),
+    ('University of Virginia','http://drama.virginia.edu/staff'),
+    ('University of Virginia','http://drama.virginia.edu/grad-ta'),
+    ('University of Virginia','http://drama.virginia.edu/emeritus-faculty'),
+    ('University of Virginia','http://drama.virginia.edu/faculty'),
+    ('University of Washington','https://drama.washington.edu/people/faculty'),
+]
+
+
+
+driver.close()    
 
 
                     
