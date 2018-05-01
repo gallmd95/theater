@@ -109,18 +109,89 @@ def getEmails():
     return emails
 
 def getNames():
+    forbidden = [
+        'Google',
+        'Facebook',
+        'Twitter',
+        'View',
+        'See',
+        'Picture',
+        'Opportun',
+        'College',
+        'University',
+        'Accept',
+        'Student',
+        'Affairs'
+    ]
+    transforms = [
+        [],
+        [],
+        [lambda x: x.split(' ')[0].lower()+'.'+x.split(' ')[-1].lower()+'@case.edu'],
+        [],
+        [],
+        [lambda x: x.split(' ')[0].lower()+'.'+x.split(' ')[-1].lower()+'@duke.edu'],
+        [],
+        [lambda x: x.split(' ')[0][0].lower()+x.split(' ')[-1].lower()+'@gmu.edu'],
+        [],
+        [lambda x: x.split(' ')[0][0].lower()+x.split(' ')[-1].lower()+'@fas.harvard.edu'],
+        [],
+        [lambda x: x.split(' ')[0][0].lower()+x.split(' ')[-1].lower()+'@indiana.edu'],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [lambda x: x.split(' ')[0].lower()+'.'+x.split(' ')[-1].lower()+'@nyu.edu'],
+        [],
+        [lambda x: x.split(' ')[0][0].lower()+'-'+x.split(' ')[-1].lower()+'@northwestern.edu',lambda x: x.split(' ')[0].lower()+'.'+x.split(' ')[-1].lower()+'@northwestern.edu',lambda x: x.split(' ')[0].lower()+'-'+x.split(' ')[-1].lower()+'@northwestern.edu',lambda x: x.split(' ')[0][0].lower()+x.split(' ')[-1].lower()+'@northwestern.edu'],
+        [],
+        [],
+        [lambda x: x.split(' ')[0][0].lower()+x.split(' ')[-1].lower()+'@stanford.edu',lambda x: x.split(' ')[-1].lower()+'@stanford.edu'],
+        [lambda x: x.split(' ')[0][0].lower()+x.split(' ')[-1].lower()+'@tamu.edu',lambda x: x.split(' ')[-1].lower()+'@tamu.edu'],
+        [],
+        [lambda x: x.split(' ')[0].lower()+'.'+x.split(' ')[-1].lower()+'@tufts.edu'],
+        [lambda x: x.split(' ')[0].lower()+x.split(' ')[-1].lower()+'@berkeley.edu'],
+        [lambda x: x.split(' ')[0][0].lower()+x.split(' ')[-1].lower()+'@ucla.edu'],
+        [lambda x: x.split(' ')[0].lower()+'.'+x.split(' ')[-1].lower()+'@ucr.edu',lambda x: x.split(' ')[0][0].lower()+x.split(' ')[-1].lower()+'@ucr.edu'],
+        [lambda x: x.split(' ')[0][0].lower()+x.split(' ')[-1].lower()+'@ucsd.edu'],
+        [lambda x: x.split(' ')[0][0].lower()+x.split(' ')[-1].lower()+'@usfca.edu'],
+        [],
+        [lambda x: x.split(' ')[0][0].lower()+x.split(' ')[-1].lower()+'@uchicago.edu'],
+        [lambda x: x.split(' ')[0][0].lower()+x.split(' ')[-1].lower()+'@illinois.edu'],
+        [lambda x: x.split(' ')[0][0].lower()+x.split(' ')[-1].lower()+'@theater.umass.edu'],
+        [],
+        [],
+        [],
+        [lambda x: x.split(' ')[0][0].lower()+'.'+x.split(' ')[-1].lower()+'@sas.upenn.edu'],
+        [lambda x: x.split(' ')[0][0].lower()+'.'+x.split(' ')[-1].lower()+'@rochester.edu'],
+        [],
+        [],
+        [],
+        [lambda x: x.split(' ')[0][0].lower()+x.split(' ')[-1].lower()+'@wisc.edu'],
+        [lambda x: x.split(' ')[0][0].lower()+'.'+x.split(' ')[-1].lower()+'@wustl.edu'],
+        [lambda x: x.split(' ')[0].lower()+'.'+x.split(' ')[-1].lower()+'@yale.edu']
+    ]
     names = {}
-    for filename in glob.glob('*.txt'):
+    ind = 0
+    for filename in sorted(glob.glob('*.txt')):
+        name = filename[:-4]
         with open(filename, 'r') as tempfile:
-            name = filename[:-4]
             names[name] = {}
             names[name]['count'] = 0
             names[name]['names'] = []
-            for line in [re.sub(r'[^\x00-\x7F]+',' ', x) for x in tempfile.readlines()]:
-                for each in get_human_names(line):
-                    names[name]['count'] +=1
-                    names[name]['names'].append(each)
-                    print each
+            names[name]['emails'] = []
+            if len(transforms[ind]) > 0:
+                for line in [re.sub(r'[^\x00-\x7F]+',' ', x) for x in tempfile.readlines()]:
+                    for each in get_human_names(line):
+                        if all(x not in each for x in forbidden):
+                            names[name]['count'] +=1
+                            names[name]['names'].append(each)
+                            for f in transforms[ind]:
+                                names[name]['emails'].append(f(each))
+        ind +=1
+    return names
+                        
+    
 
 def getLinks():
     links = [
@@ -169,11 +240,12 @@ def getLinks():
     return emails
 
 
-emails = getLinks()
-for key in emails.keys():
-    print key
-    for each in list(set(emails[key]['emails'])):
-        print each
+emails = getNames()
+print emails
+#for key in emails.keys():
+#    print key
+#    for each in list(set(emails[key]['emails'])):
+#        print each
 
     
 
