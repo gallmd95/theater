@@ -121,7 +121,12 @@ def getNames():
         'University',
         'Accept',
         'Student',
-        'Affairs'
+        'Affair',
+        'Alum',
+        'Content',
+        'Public',
+        'Settings',
+        'Associat'
     ]
     transforms = [
         [],
@@ -242,10 +247,10 @@ def getLinks():
 
 emails = getNames()
 print emails
-#for key in emails.keys():
-#    print key
-#    for each in list(set(emails[key]['emails'])):
-#        print each
+for key in emails.keys():
+    print key
+    for each in list(set(emails[key]['emails'])):
+        print each
 
     
 
